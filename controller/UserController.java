@@ -8,6 +8,7 @@ import com.example.reggie_take_out.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +25,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 发送手机短信验证码,没有用到
@@ -43,7 +47,9 @@ public class UserController {
             //SMSUtils.sendMessage("瑞吉外卖","",phone,code);
 
             //需要将生成的验证码保存到Session
-            session.setAttribute(phone,code);
+//            session.setAttribute(phone,code);
+            //需要将生成的验证码保存到redis,时间设置为5min
+            redisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
 
             return R.success("手机验证码短信发送成功");
         }
@@ -77,6 +83,10 @@ public class UserController {
             userService.save(user);
         }
         session.setAttribute("user",user.getId());
+        //这个代码随便加的，防止报错
+        redisTemplate.opsForValue().set(phone, 1234, 5, TimeUnit.MINUTES);
+        //用户登录成功，删除redis中的验证码
+        redisTemplate.delete(phone);
         return R.success(user);
     }
 
