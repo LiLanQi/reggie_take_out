@@ -34,6 +34,12 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
             "classpath:/META-INF/resources/", "classpath:/resources/",
             "classpath:/static/", "classpath:/public/" };
+    /**
+     * 设置资源映射
+     * @param registry
+     * 前面表示的是浏览器访问的请求
+     * 后面表示的是要把请求映射到哪里去
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         if (!registry.hasMappingForPattern("/webjars/**")) {
